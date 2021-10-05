@@ -38,10 +38,11 @@ enum Errors {
     NOT_A_STACK  = 1, //< If struct wasn't stack
     MEMORY_ERROR = 2, //< Not enough memory or another memerror
     OVERFLOW     = 3, //< Size > capacity error
-    POP_ERROR    = 4, //< Something went wrong in Pop func
-    PUSH_ERROR   = 5, //< Something went wrong in push func
-    RESIZE_ERROR = 6, //< Something went wrong in resize func
-    DTOR_ERROR   = 7  //< If dtor was called twice or another dtor error
+    UNDERFLOW    = 4, //< Size <= 0
+    POP_ERROR    = 5, //< Something went wrong in Pop func
+    PUSH_ERROR   = 6, //< Something went wrong in push func
+    RESIZE_ERROR = 7, //< Something went wrong in resize func
+    DTOR_ERROR   = 8  //< If dtor was called twice or another dtor error
 };
 
 typedef enum Errors Errors;
@@ -117,6 +118,8 @@ Errors StackDtor(Stack* stk);
  *
  * @param [in] <stk>  Pointer to the stack instance
  * @param [in] <elem> pointer to add in the end of stack
+ *
+ * @return error code
  */
 Errors StackPush(Stack* stk, void* elem);
 
@@ -126,7 +129,7 @@ Errors StackPush(Stack* stk, void* elem);
  * @param [in]  <stk>    pointer to the stack instance
  * @param [out] <value>  where ans will be written
  *
- * @return The last Stack element
+ * @return error code
  */
 Errors StackPop(Stack* stk, void* value);
 
