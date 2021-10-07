@@ -34,15 +34,17 @@
  * different type of error.
  */
 enum Errors {
-    STACK_OK     = 0, //< All was ok
-    NOT_A_STACK  = 1, //< If struct wasn't stack
-    MEMORY_ERROR = 2, //< Not enough memory or another memerror
-    OVERFLOW     = 3, //< Size > capacity error
-    UNDERFLOW    = 4, //< Size <= 0
-    POP_ERROR    = 5, //< Something went wrong in Pop func
-    PUSH_ERROR   = 6, //< Something went wrong in push func
-    RESIZE_ERROR = 7, //< Something went wrong in resize func
-    DTOR_ERROR   = 8  //< If dtor was called twice or another dtor error
+    STACK_OK     =  0, //< All was ok
+    NOT_A_STACK  =  1, //< If struct wasn't stack
+    MEMORY_ERROR =  2, //< Not enough memory or another memerror
+    OVERFLOW     =  3, //< Size > capacity error
+    UNDERFLOW    =  4, //< Size <= 0
+    POP_ERROR    =  5, //< Something went wrong in Pop func
+    PUSH_ERROR   =  6, //< Something went wrong in push func
+    RESIZE_ERROR =  7, //< Something went wrong in resize func
+    DTOR_ERROR   =  8, //< If dtor was called twice or another dtor error
+    STK_CANARY   =  9, //< If one of stack canaries have been changed
+    DATA_CANARY  = 10  //< If one of data canaries have been changed
 };
 
 typedef enum Errors Errors;
@@ -147,16 +149,29 @@ Errors StackPop(Stack* stk, void* value);
 Errors StackResize(Stack* stk, size_t new_cap);
 
 /*!
+ * @brief Func to check if stack is ok
+ *
+ * Depends on what it has in canary params, 
+ * data pointer and size, capacity params
+ * returns error code.
+ *
+ * @param [in] <stk> Pointer to the stack instance
+ *
+ * @return error code
+ */
+Errors StackCheck(Stack* stk);
+
+/*!
  * @brief Prints all the information in log file
  *
  * Prints where stack is now and availible
  * status of it
  *
  * @param [in] <stk>  Pointer to the stack instance
+ * @paran [in] <err>  Code of error
  *
- * @return error code
  */
-Errors StackDump(Stack* stk, int line, char* func);
+void StackDump(Stack* stk, Errors err);
 
 #undef DEBUG
 #endif // STACK_H_INCLUDED

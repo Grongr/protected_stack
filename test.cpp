@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdio.h>
+
 #include "mem_copy.h"
 
 #include "stack.h"
@@ -60,15 +61,19 @@ Errors first_stack_test() {
     CODE_CHECK(StackPush(&stk, &(value = 0)), STACK_OK);
     CODE_CHECK(StackPush(&stk, &(value = 1)), STACK_OK);
     CODE_CHECK(StackPush(&stk, &(value = 2)), STACK_OK);
+
     CODE_CHECK(StackPush(&stk, &(value = 3)), STACK_OK);
     CODE_CHECK(StackPush(&stk, &(value = 4)), STACK_OK);
     CODE_CHECK(StackPush(&stk, &(value = 5)), STACK_OK);
+
+    stk.size = 10;
 
     value = -1;
 
     CODE_CHECK(StackPop(&stk, &value), STACK_OK);
     printf("Element: %d\n", value);
 
+    StackDump(&stk, STACK_OK);
 
     CODE_CHECK(StackPop(&stk, &value), STACK_OK);
     printf("Element: %d\n", value);
