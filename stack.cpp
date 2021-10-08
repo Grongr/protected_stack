@@ -58,6 +58,9 @@ static void FillElmPoison(Stack* stk) {
 /*****************************************************************/
 Errors StackCtor(Stack* stk, size_t element_size, size_t cap) {
 
+    if (stk->capacity > 0)
+        return CTOR_ERROR;
+
     stk->capacity     = (cap <= 4) ? 4 : cap;
     stk->size         = 0;
     stk->element_size = element_size;
@@ -153,7 +156,7 @@ Errors StackPop(Stack* stk, void* value) {
 
     STACK_CHECK(stk)
 
-    if (stk->size <= 0)
+    if (stk->size == 0)
         return UNDERFLOW;
 
     --stk->size;
@@ -226,6 +229,7 @@ Errors StackResize(Stack* stk, size_t new_cap) {
 }
 
 
+//TODO
 /*****************************************************************/
 Errors StackCheck(Stack* stk) {
 
@@ -286,7 +290,7 @@ void StackDump(Stack* stk, Errors err) {
 
         fprintf(log, "    * [%d] = ", (int)i);
         PrintElement(log, (char*)stk->data + stk->element_size * i);
-        fprintf(log, "\n");
+        fputs("\n", log);
     }
 
     for (size_t i = stk->size; i < stk->capacity; ++i) {
@@ -314,7 +318,7 @@ void StackDump(Stack* stk, Errors err) {
     fprintf(log, "Stk resent hash and correct one:  [%lX] [%lX]\n",
             stk->hash, StkHash(stk));
 
-    fprintf(log, "Data resent hash and correct one: [%lX] [%lX]\n\n",
+    fprintf(log, "Data resent hash and correct one: [%lX] [%lX]\n",
             stk->datah, DataHash(stk));
 
 

@@ -13,7 +13,7 @@ const int ELEMENT_POISON = 666;
  *
  * User must define this func for dump to work without
  * problems. Write your definition of this func in 
- * <print_element.cpp>
+ * <user_funcs.cpp>
  *
  * @param [in] <elem>   Pointer to the beginning of element
  * @param [in] <output> Where to write the result

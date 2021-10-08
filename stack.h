@@ -41,16 +41,17 @@ typedef enum Errors {
     STACK_OK     =  0, //< All was ok
     NOT_A_STACK  =  1, //< If struct wasn't stack
     MEMORY_ERROR =  2, //< Not enough memory or another memerror
-    OVERFLOW     =  3, //< Size > capacity error
+    OVERFLOW     =  3, //< Size > capacity or needed size error
     UNDERFLOW    =  4, //< Size <= 0
     POP_ERROR    =  5, //< Something went wrong in Pop func
     PUSH_ERROR   =  6, //< Something went wrong in push func
     RESIZE_ERROR =  7, //< Something went wrong in resize func
     DTOR_ERROR   =  8, //< If dtor was called twice or another dtor error
-    STK_CANARY   =  9, //< If one of stack canaries have been changed
-    DATA_CANARY  = 10, //< If one of data canaries have been changed
-    DATA_HASH    = 11, //< If data hash has been changed without reason
-    STK_HASH     = 12  //< If stack hash has been changed without reason
+    CTOR_ERROR   =  9, //< If ctor was called twice or another ctor error
+    STK_CANARY   = 10, //< If one of stack canaries have been changed
+    DATA_CANARY  = 11, //< If one of data canaries have been changed
+    DATA_HASH    = 12, //< If data hash has been changed without reason
+    STK_HASH     = 13  //< If stack hash has been changed without reason
 } Errors;
 
 /*!
