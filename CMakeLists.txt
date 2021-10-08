@@ -6,9 +6,18 @@ set (CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wfloat-equal -Wsign-co
 
 add_executable(main main.cpp
                     stack.cpp
-                    mem_copy.cpp)
+                    mem_copy.cpp
+                    user_funcs.cpp
+                    hash.cpp)
+
+add_executable(test test.cpp
+                    stack.cpp
+                    mem_copy.cpp
+                    user_funcs.cpp
+                    hash.cpp)
 
 target_link_libraries(main m)
+target_link_libraries(test m)
 
 
 #cmake_minimum_required(VERSION 3.16)

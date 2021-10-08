@@ -14,8 +14,12 @@
  * understand what type canary is and CANPROTECTION
  * constant to understand what value should be in
  * <start_canary> and <end_canary> valuables
+ *
+ * <log_file> is variable where you can specify
+ * a peth to log file
  */
 #define DEBUG
+
 #ifdef DEBUG
 #define CANARY_PROTECTION
 #define HASH_SUM_PROTECTION
@@ -33,7 +37,7 @@
  * List of constants. Each one means
  * different type of error.
  */
-enum Errors {
+typedef enum Errors {
     STACK_OK     =  0, //< All was ok
     NOT_A_STACK  =  1, //< If struct wasn't stack
     MEMORY_ERROR =  2, //< Not enough memory or another memerror
@@ -44,10 +48,10 @@ enum Errors {
     RESIZE_ERROR =  7, //< Something went wrong in resize func
     DTOR_ERROR   =  8, //< If dtor was called twice or another dtor error
     STK_CANARY   =  9, //< If one of stack canaries have been changed
-    DATA_CANARY  = 10  //< If one of data canaries have been changed
-};
-
-typedef enum Errors Errors;
+    DATA_CANARY  = 10, //< If one of data canaries have been changed
+    DATA_HASH    = 11, //< If data hash has been changed without reason
+    STK_HASH     = 12  //< If stack hash has been changed without reason
+} Errors;
 
 /*!
  * @brief Not another simple stack
@@ -72,7 +76,7 @@ typedef enum Errors Errors;
  * @param <element_size> sizeof(element)
  * @param <end_canary>   Canary in the end of stack mem
  */
-struct Stack {
+typedef struct Stack {
 
 #ifdef CANARY_PROTECTION
     canary_t start_canary;
@@ -82,12 +86,17 @@ struct Stack {
     size_t   capacity;
     size_t   size;
     size_t   element_size;
+
+#ifdef HASH_SUM_PROTECTION
+    size_t   hash;
+    size_t   datah;
+#endif // HASH_SUM_PROTECTION
     
 #ifdef CANARY_PROTECTION
     canary_t end_canary;
 #endif // CANARY_PROTECTION
 
-};
+} Stack;
 
 /*!
  * @brief Constructor of stack

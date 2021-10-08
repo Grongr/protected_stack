@@ -5,6 +5,7 @@
 
 #include "mem_copy.h"
 #include "stack.h"
+#include "hash.h"
 
 #include "user_funcs.h"
 
@@ -19,6 +20,7 @@ const char* log_file = "./log.txt";
     if (CODE != OK_CODE) return CODE; \
 }
 
+#ifdef ABSOLUTE_LOGGING
 #define STACK_CHECK(stk)                                                        \
 {                                                                               \
     Errors err = StackCheck(stk);                                               \
@@ -29,19 +31,21 @@ const char* log_file = "./log.txt";
         fprintf(log, "ERROR %d: file %s line %d ", err, __FILE__, __LINE__);    \
         fprintf(log, "function \'%s\'\n", __FUNCTION__);                        \
         fclose(log);                                                            \
-        printf("ERROR: file %s line %d ", __FILE__, __LINE__);                  \
-        printf("function \'%s\'\n", __FUNCTION__);                              \
         StackDump(stk, err);                                                    \
     }                                                                           \
 }
+#else
+    #define STACK_CHECK(stk)
+#endif // ABSOLUTE_LOGGING
 
 /*****************************************************************/
 /*!
  * @brief Fills all unused data memory
  *
- * Uses user pison which whould be defined in
+ * Uses user poison which whould be defined in
  * <user_funcs> files
  */
+/*****************************************************************/
 static void FillElmPoison(Stack* stk) {
 
     for (size_t i = stk->size; i < stk->capacity; ++i) {
@@ -84,6 +88,11 @@ Errors StackCtor(Stack* stk, size_t element_size, size_t cap) {
     FillElmPoison(stk);
 #endif
 
+#ifdef HASH_SUM_PROTECTION
+    stk->hash  = StkHash(stk);
+    stk->datah = DataHash(stk);
+#endif
+
     return STACK_OK;
 }
 
@@ -105,6 +114,8 @@ Errors StackDtor(Stack* stk) {
     stk->capacity     = 0;
     stk->size         = 0;
     stk->element_size = 0;
+    stk->hash         = 0;
+    stk->datah        = 0;
 
     return STACK_OK;
 }
@@ -126,6 +137,11 @@ Errors StackPush(Stack* stk, void* elem) {
         return MEMORY_ERROR;
 
     ++stk->size;
+
+#ifdef HASH_SUM_PROTECTION
+    stk->datah = DataHash(stk);
+    stk->hash  = StkHash(stk);
+#endif
 
     STACK_CHECK(stk)
     return STACK_OK;
@@ -159,6 +175,11 @@ Errors StackPop(Stack* stk, void* value) {
      
     if (err != ALL_OK)
         return MEMORY_ERROR;
+
+#ifdef HASH_SUM_PROTECTION
+    stk->datah = DataHash(stk);
+    stk->hash  = StkHash(stk);
+#endif
     
     STACK_CHECK(stk)
     return STACK_OK;
@@ -194,6 +215,13 @@ Errors StackResize(Stack* stk, size_t new_cap) {
     FillElmPoison(stk);
 #endif
 
+#ifdef HASH_SUM_PROTECTION
+    stk->hash  = StkHash(stk);
+    stk->datah = DataHash(stk);
+#endif
+
+    STACK_CHECK(stk)
+
     return STACK_OK;
 }
 
@@ -223,6 +251,18 @@ Errors StackCheck(Stack* stk) {
 
     if (*left != CANPROTECTION || *right != CANPROTECTION)
         return DATA_CANARY;
+#endif
+
+#ifdef HASH_SUM_PROTECTION
+    size_t stkh = StkHash(stk);
+
+    if (stkh != stk->hash)
+        return STK_HASH;
+
+    size_t datah = DataHash(stk);
+
+    if (datah != stk->datah)
+        return DATA_HASH;
 #endif
 
     return STACK_OK;
@@ -259,11 +299,28 @@ void StackDump(Stack* stk, Errors err) {
             fprintf(log, " (poison)\n");
     }
 
-    fputs("}\n", log);
+    fputs("}\n\n", log);
+
+    fprintf(log, "Stack start canary: [%llX]\n", stk->start_canary);
+    fprintf(log, "Stack end   canary: [%llX]\n\n", stk->end_canary);
+
+    canary_t* left  = &((canary_t*)(stk->data))[-1];
+    canary_t* right = (canary_t*)((char*)stk->data +
+                      stk->capacity * stk->element_size);
+
+    fprintf(log, "Data left  canary: [%llX]\n", *left);
+    fprintf(log, "Data right canary: [%llX]\n", *right);
+
+    fprintf(log, "Stk resent hash and correct one:  [%lX] [%lX]\n",
+            stk->hash, StkHash(stk));
+
+    fprintf(log, "Data resent hash and correct one: [%lX] [%lX]\n\n",
+            stk->datah, DataHash(stk));
+
 
     fflush(log);
     fclose(log);
 }
 
-
+#undef STACK_CHECK
 #undef CODE_CHECK

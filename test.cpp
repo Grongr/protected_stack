@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <stdio.h>
+#include <stdlib.h>
 
 #include "mem_copy.h"
-
+#include "hash.h"
 #include "stack.h"
 
 #define CODE_CHECK(FUNC, OK_CODE)     \
@@ -66,7 +66,7 @@ Errors first_stack_test() {
     CODE_CHECK(StackPush(&stk, &(value = 4)), STACK_OK);
     CODE_CHECK(StackPush(&stk, &(value = 5)), STACK_OK);
 
-    stk.size = 10;
+    /* stk.size = 10; */
 
     value = -1;
 
@@ -132,6 +132,27 @@ Errors second_stack_test() {
     return STACK_OK;
 }
 
+void hash_algo_test() {
+
+    int data[4] = {1, 2, 3, 4};
+
+    size_t h1 = HashFunc(data, sizeof(int) * 4);
+    size_t h2 = HashFunc(data, sizeof(int) * 4);
+
+    printf("First and second hashes of data are: [%lX] [%lX]\n", h1, h2);
+
+    int* carr = (int*)calloc(5, sizeof(int));
+    carr[0] = carr[1] = carr[2] = carr[3] = carr[4] = 5;
+
+    size_t h3 = HashFunc(carr, sizeof(int) * 5);
+    size_t h4 = HashFunc(carr, sizeof(int) * 5);
+
+    printf("First and second hashes of carr are: [%lX] [%lX]\n", h3, h4);
+
+    free(carr);
+
+}
+
 int main() {
 
     mem_copy_test();
@@ -142,6 +163,11 @@ int main() {
 
     puts("================================");
     printf("Result of second stack test: %d\n", second_stack_test());
+    puts("================================");
+
+    puts("================================");
+    puts("Result of hash algo test:");
+    hash_algo_test();
     puts("================================");
 
     return 0;

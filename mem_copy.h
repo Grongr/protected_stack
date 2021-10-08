@@ -6,12 +6,12 @@
 /*!
  * @brief Enum with Memory errors
  */
-enum MemErrors {
+typedef enum MemErrors {
     ALL_OK          = 0, //< All was ok
     MEM_LACK        = 1, //< Lack of memory
     INVALID_POINTER = 2, //< Name says all you need
     ANOTHER         = 3  //< not understandable error
-};
+} MemErrors;
 
 /*!
  * @brief This is my realisation of memcpy
