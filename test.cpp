@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "mem_copy.h"
+#include "user_funcs.h"
 #include "hash.h"
 #include "stack.h"
 
@@ -54,7 +56,7 @@ Errors first_stack_test() {
     puts("======Stack=testing======\n");
     Stack stk = {};
 
-    CODE_CHECK(StackCtor(&stk, sizeof(int)), STACK_OK);
+    StackCtor_(stk, int);
 
     int value;
 
@@ -73,7 +75,7 @@ Errors first_stack_test() {
     CODE_CHECK(StackPop(&stk, &value), STACK_OK);
     printf("Element: %d\n", value);
 
-    StackDump(&stk, STACK_OK);
+    /* StackDump(&stk, STACK_OK); */
 
     CODE_CHECK(StackPop(&stk, &value), STACK_OK);
     printf("Element: %d\n", value);
@@ -100,8 +102,8 @@ Errors second_stack_test() {
     Stack s1 = {};
     Stack s2 = {};
 
-    CODE_CHECK(StackCtor(&s1, sizeof(int)), STACK_OK);
-    CODE_CHECK(StackCtor(&s2, sizeof(double)), STACK_OK);
+    StackCtor_(s1, int);
+    StackCtor_(s2, double);
 
     int v1;
     double v2;

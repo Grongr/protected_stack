@@ -39,26 +39,9 @@ const char* log_file = "./log.txt";
 #endif // ABSOLUTE_LOGGING
 
 /*****************************************************************/
-/*!
- * @brief Fills all unused data memory
- *
- * Uses user poison which whould be defined in
- * <user_funcs> files
- */
-/*****************************************************************/
-static void FillElmPoison(Stack* stk) {
-
-    for (size_t i = stk->size; i < stk->capacity; ++i) {
-
-        mem_copy((void*)((char*)stk->data + i * stk->element_size),
-                 (void*)&ELEMENT_POISON, stk->element_size);
-    }
-}
-
-/*****************************************************************/
 Errors StackCtor(Stack* stk, size_t element_size, size_t cap) {
 
-    if (stk->capacity > 0)
+    if (stk->capacity > 0 || stk->type == NULL)
         return CTOR_ERROR;
 
     stk->capacity     = (cap <= 4) ? 4 : cap;
@@ -88,7 +71,7 @@ Errors StackCtor(Stack* stk, size_t element_size, size_t cap) {
 #endif // CANARY_PROTECTION
 
 #ifdef ABSOLUTE_LOGGING
-    FillElmPoison(stk);
+    stk->FillElmPoison(stk->data, stk->size, stk->capacity);
 #endif
 
 #ifdef HASH_SUM_PROTECTION
@@ -119,6 +102,7 @@ Errors StackDtor(Stack* stk) {
     stk->element_size = 0;
     stk->hash         = 0;
     stk->datah        = 0;
+    stk->type         = NULL;
 
     return STACK_OK;
 }
@@ -171,13 +155,7 @@ Errors StackPop(Stack* stk, void* value) {
     if (stk->size / 4 <= stk->capacity && stk->size > 8)
         CODE_CHECK(StackResize(stk, stk->capacity / 2), STACK_OK);
 
-    err = mem_copy((void*)((char*)stk->data +
-                           stk->size * stk->element_size),
-                           (void*)&ELEMENT_POISON,
-                           stk->element_size);
-     
-    if (err != ALL_OK)
-        return MEMORY_ERROR;
+    stk->FillElmPoison(stk->data, stk->size, stk->size + 1);
 
 #ifdef HASH_SUM_PROTECTION
     stk->datah = DataHash(stk);
@@ -215,7 +193,7 @@ Errors StackResize(Stack* stk, size_t new_cap) {
 #endif // CANARY_PROTECTION
 
 #ifdef ABSOLUTE_LOGGING
-    FillElmPoison(stk);
+    stk->FillElmPoison(stk->data, stk->size, stk->capacity);
 #endif
 
 #ifdef HASH_SUM_PROTECTION
@@ -279,8 +257,8 @@ void StackDump(Stack* stk, Errors err) {
 
     fprintf(log, "###########################################################\n");
 
-    fprintf(log, "Stack with elements <%d> size: [%p]. Error code: %d\n{\n",
-           (int)stk->element_size, stk, err);
+    fprintf(log, "Stack with elements <%s> size: [%p]. Error code: %d\n{\n",
+           stk->type, stk, err);
 
     fprintf(log, "Size : %d\n", (int)stk->size);
     fprintf(log, "Capacity : %d\n", (int)stk->capacity);
@@ -289,15 +267,15 @@ void StackDump(Stack* stk, Errors err) {
     for (size_t i = 0; i < stk->size; ++i) {
 
         fprintf(log, "    * [%d] = ", (int)i);
-        PrintElement(log, (char*)stk->data + stk->element_size * i);
+        stk->PrintElement(log, (char*)stk->data + stk->element_size * i);
         fputs("\n", log);
     }
 
     for (size_t i = stk->size; i < stk->capacity; ++i) {
 
         fprintf(log, "      [%d] = ", (int)i);
-        PrintElement(log, (char*)stk->data + stk->element_size * i);
-        if (!IsPoison((void*)((char*)stk->data + stk->element_size * i)))
+        stk->PrintElement(log, (char*)stk->data + stk->element_size * i);
+        if (!stk->IsPoison((void*)((char*)stk->data + stk->element_size * i)))
             fprintf(log, "\n");
         else
             fprintf(log, " (poison)\n");
@@ -308,7 +286,7 @@ void StackDump(Stack* stk, Errors err) {
     fprintf(log, "Stack start canary: [%llX]\n", stk->start_canary);
     fprintf(log, "Stack end   canary: [%llX]\n\n", stk->end_canary);
 
-    canary_t* left  = &((canary_t*)(stk->data))[-1];
+    canary_t* left  = &(((canary_t*)(stk->data))[-1]);
     canary_t* right = (canary_t*)((char*)stk->data +
                       stk->capacity * stk->element_size);
 

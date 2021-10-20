@@ -1,0 +1,4 @@
+1) Add print_func it stack_dump as a param
+2) To do unitests
+3) To add debug funcs eith params
+4) To rewrite shitcode

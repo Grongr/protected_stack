@@ -1,7 +1,11 @@
 #ifndef STACK_H_INCLUDED
 #define STACK_H_INCLUDED
 
+#include <stdio.h>
 #include <stddef.h>
+
+#include "user_funcs.h"
+
 /*!
  * @brief Running mods
  *
@@ -37,7 +41,7 @@
  * List of constants. Each one means
  * different type of error.
  */
-typedef enum Errors {
+typedef enum {
     STACK_OK     =  0, //< All was ok
     NOT_A_STACK  =  1, //< If struct wasn't stack
     MEMORY_ERROR =  2, //< Not enough memory or another memerror
@@ -75,18 +79,24 @@ typedef enum Errors {
  * @param <capacity>     memeory / sizeof(element)
  * @param <size>         now elements in array
  * @param <element_size> sizeof(element)
+ * @param <type>         tyoe of stack
  * @param <end_canary>   Canary in the end of stack mem
  */
-typedef struct Stack {
+typedef struct {
 
 #ifdef CANARY_PROTECTION
     canary_t start_canary;
 #endif // CANARY_PROTECTION
 
-    void*    data;
-    size_t   capacity;
-    size_t   size;
-    size_t   element_size;
+    void*          data;
+    size_t         capacity;
+    size_t         size;
+    size_t         element_size;
+    const char*    type;
+
+    void (*PrintElement) (FILE*, const void*);
+    bool (*IsPoison) (const void*);
+    void (*FillElmPoison) (const void*, size_t, size_t);
 
 #ifdef HASH_SUM_PROTECTION
     size_t   hash;
@@ -103,6 +113,8 @@ typedef struct Stack {
  * @brief Constructor of stack
  *
  * Constructs the stack with capacity == cap
+ * Use it with <StackCtor_> definition if you wanna
+ * use Dumping
  *
  * @param [out] <stk>           pointer to the stack we construct
  * @param [in]  <element_size>  sizeof one element
@@ -111,6 +123,33 @@ typedef struct Stack {
  * return Error code from <enum Errors>
  */
 Errors StackCtor(Stack* stk, size_t element_size, size_t cap = 0);
+
+/*****************************************************************/
+#ifdef ABSOLUTE_LOGGING
+
+#define CAT(X, Y) X ## _ ## Y
+#define TEMPLATE(X, Y) CAT(X, Y)
+/*!
+ * @brief To comfortly using stack use it
+ *
+ * @param [in] <stk>  this is a stack instance
+ * @param [in] <type> type of stack elements
+ */
+#define StackCtor_(stk, type_)                          \
+{                                                       \
+    stk.type = #type_;                                  \
+    stk.PrintElement = TEMPLATE(PrintElement, type_);   \
+    stk.IsPoison = TEMPLATE(IsPoison, type_);           \
+    stk.FillElmPoison = TEMPLATE(FillElmPoison, type_); \
+    StackCtor(&stk, sizeof(type_));                     \
+}
+
+#else // ABSOLUTE_LOGGING
+
+#define StackCtor_ StackCtor
+
+#endif // ABSOLUTE_LOGGING
+/*****************************************************************/
 
 /*!
  * @brief Destrucor of stack

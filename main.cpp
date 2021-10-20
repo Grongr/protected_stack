@@ -11,20 +11,6 @@
     if (CODE != OK_CODE) return CODE; \
 }
 
-void StackPrint(Stack* stk) {
-
-    printf("Capacity: %d\n", (int)stk->capacity);
-    printf("Size:     %d\n", (int)stk->size);
-    printf("ElementS: %d\n", (int)stk->element_size);
-    printf("Pointer:  %p\n", stk->data);
-
-    for (int i = 0; i < (int)stk->capacity; ++i) {
-
-        int* dat = (int*)stk->data;
-        printf("%d element: %d\n", i, dat[i]);
-    }
-}
-
 void mem_copy_test() {
 
     puts("=====Memory=copying=test=====");
@@ -54,7 +40,7 @@ Errors first_stack_test() {
     puts("======Stack=testing======\n");
     Stack stk = {};
 
-    CODE_CHECK(StackCtor(&stk, sizeof(int)), STACK_OK);
+    StackCtor_(stk, int);
 
     int value;
 
@@ -97,8 +83,8 @@ Errors second_stack_test() {
     Stack s1 = {};
     Stack s2 = {};
 
-    CODE_CHECK(StackCtor(&s1, sizeof(int)), STACK_OK);
-    CODE_CHECK(StackCtor(&s2, sizeof(double)), STACK_OK);
+    StackCtor_(s1, int);
+    StackCtor_(s2, double);
 
     int v1;
     double v2;
